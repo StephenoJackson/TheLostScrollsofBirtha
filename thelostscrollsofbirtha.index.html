@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Lost Scroll of Birtha</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a vertical, scroll-driven narrative to best suit the story-like nature of the source text. This structure allows the user to experience the narrative arc chronologically and thematically, starting with Birtha's character, moving to the central conflict, exploring the resulting themes interactively, and ending with her concluding message. A new 'Our Stories' section is added at the end to extend the narrative to user contributions, fostering community and deeper engagement with the themes of resilience and grace. This is more engaging than static text as it visually separates key moments and invites interaction, enhancing comprehension and emotional connection through dedicated, interactive sections. -->
+    <!-- Visualization & Content Choices: 
+        1. Report Info: Key Characters (Birtha, Jehiel, Elara). Goal: Organize & Show Relationships. Viz/Method: Interactive character cards using HTML/Tailwind. Interaction: Clicking a card highlights it and displays text snippets describing that character's perspective. Justification: Visually organizes the central conflict and allows active exploration of each viewpoint. Library: Vanilla JS.
+        2. Report Info: Thematic conflict between "Pride" and "Forgiveness". Goal: Compare & Inform. Viz/Method: A donut chart (Chart.js) and associated text panels. Interaction: Buttons representing themes update descriptive text below the chart. Justification: Turns an abstract concept into a tangible, interactive exploration of the story's core message. Library: Chart.js, Vanilla JS.
+        3. Report Info: Erasure from the scrolls. Goal: Show Change. Viz/Method: "Fading Scroll" effect on a text passage. Interaction: A button triggers a JS function to fade out text, visually representing its removal. Justification: A powerful visual metaphor for the story's central action, making the consequence feel impactful. Library: Vanilla JS.
+        4. Report Info: User-generated stories related to resilience/grace. Goal: Engage & Inform (community). Viz/Method: Form for submission and dynamic list display (HTML/Tailwind). Interaction: Form submission adds new story to a displayed list. Justification: Encourages active participation and allows users to connect their experiences to the core themes. Library: Vanilla JS.
+        -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Tinos', serif;
+            background-color: #FDFBF8;
+            color: #4A3F35;
+        }
+        .nav-link {
+            transition: color 0.3s ease, border-color 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #A0522D;
+            border-bottom-color: #A0522D;
+        }
+        .character-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            cursor: pointer;
+        }
+        .character-card.selected {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-color: #A0522D;
+        }
+        .fading-text.faded {
+            opacity: 0.2;
+            transition: opacity 1.5s ease;
+        }
+        .theme-button {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .story-card {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-[#FDFBF8]/80 backdrop-blur-sm sticky top-0 z-50 py-4 shadow-sm">
+        <nav class="container mx-auto px-6 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-[#A0522D]">The Lost Scroll of Birtha</h1>
+            <div class="hidden md:flex space-x-8">
+                <a href="#introduction" class="nav-link pb-1">Introduction</a>
+                <a href="#conflict" class="nav-link pb-1">The Conflict</a>
+                <a href="#themes" class="nav-link pb-1">The Themes</a>
+                <a href="#legacy" class="nav-link pb-1">Legacy</a>
+                <a href="#our-stories" class="nav-link pb-1">Our Stories</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 md:py-20">
+
+        <!-- Section 1: Introduction -->
+        <section id="introduction" class="text-center mb-20 md:mb-32">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6 text-[#4A3F35]">A Handmaiden of the Most High</h2>
+            <p class="max-w-3xl mx-auto text-lg md:text-xl leading-relaxed text-gray-700">
+                This is the story of Birtha, a woman of faith whose name was lost to the scrolls of men, but whose spirit endures. This interactive narrative explores her life of service, the single moment that changed her fate, and the profound truth she carried in her heart. Journey through her account to understand the forces of pride, forgiveness, and the nature of true righteousness.
+            </p>
+            <div class="mt-12">
+                <div class="max-w-4xl mx-auto bg-white/50 p-8 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="font-bold text-2xl mb-4 text-[#A0522D]">The Testimony of Service</h3>
+                    <p class="fading-text text-lg italic text-gray-800 leading-loose">"I walked among the faithful, ministering to the sick, comforting the sorrowful... My hands were ever busy, sewing garments for the needy, preparing meals for the hungry, and tending to the children who gathered at my feet. I sought no glory, only to serve the Lord and His people with purity of intention and unwavering devotion."</p>
+                    <div id="erasure-container" class="text-center mt-6">
+                         <button id="erasure-button" class="bg-[#A0522D] text-white py-2 px-5 rounded-lg hover:bg-[#8B4513] transition-colors duration-300">Enact Jehiel's Decree</button>
+                    </div>
+                    <p id="erasure-message" class="text-center mt-4 text-red-800 font-bold hidden"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: The Conflict -->
+        <section id="conflict" class="mb-20 md:mb-32">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6 text-[#4A3F35]">A Moment's Folly</h2>
+             <p class="max-w-3xl mx-auto text-lg md:text-xl leading-relaxed text-gray-700 text-center mb-12">
+                The central conflict of Birtha's story involves three key individuals whose lives became tragically intertwined. A single transgression, born not of malice but of human frailty, set in motion a devastating response driven by pride. Click on each character to explore their role and perspective in this pivotal event.
+            </p>
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div class="character-card bg-white p-6 rounded-lg border-2 border-transparent shadow-md" data-char="birtha">
+                    <h3 class="text-2xl font-bold mb-2 text-[#A0522D]">Birtha</h3>
+                    <p class="text-gray-600">The Devout Handmaiden</p>
+                </div>
+                <div class="character-card bg-white p-6 rounded-lg border-2 border-transparent shadow-md" data-char="elara">
+                    <h3 class="text-2xl font-bold mb-2 text-[#A0522D]">Elara</h3>
+                    <p class="text-gray-600">The Restless Heart</p>
+                </div>
+                <div class="character-card bg-white p-6 rounded-lg border-2 border-transparent shadow-md" data-char="jehiel">
+                    <h3 class="text-2xl font-bold mb-2 text-[#A0522D]">Jehiel</h3>
+                    <p class="text-gray-600">The Prideful Scribe</p>
+                </div>
+            </div>
+            <div id="character-info" class="mt-8 p-8 bg-stone-100 rounded-lg min-h-[150px] flex items-center justify-center transition-opacity duration-500">
+                <p class="text-lg text-gray-500">Select a character to see their story.</p>
+            </div>
+        </section>
+
+        <!-- Section 3: The Themes -->
+        <section id="themes" class="mb-20 md:mb-32">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6 text-[#4A3F35]">The Price of Pride</h2>
+            <p class="max-w-3xl mx-auto text-lg md:text-xl leading-relaxed text-gray-700 text-center mb-12">
+                At its core, this story is a powerful meditation on the clash between human pride and divine grace. Jehiel's reaction was driven by fear for his reputation, while Birtha's response was one of quiet endurance and faith. The chart below visualizes the imbalance, representing the overwhelming weight of pride that led to her erasure.
+            </p>
+            <div class="flex flex-col lg:flex-row items-center gap-8">
+                <div class="w-full lg:w-1/2">
+                   <div class="chart-container">
+                        <canvas id="themes-chart"></canvas>
+                   </div>
+                </div>
+                <div class="w-full lg:w-1/2">
+                    <div id="theme-info" class="p-6 bg-white rounded-lg shadow-inner border border-gray-200">
+                        <h3 id="theme-title" class="text-2xl font-bold mb-3 text-[#A0522D]">The Dominance of Pride</h3>
+                        <p id="theme-description" class="text-lg leading-relaxed text-gray-800">Jehiel "saw not the depth of my sorrow, nor the singular nature of my mistake, but only the perceived stain upon his honor, a blemish he could not bear for the world to witness... He consulted not with the elders for counsel on forgiveness, but with his own bruised ego."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Legacy -->
+        <section id="legacy" class="text-center mb-20 md:mb-32">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6 text-[#4A3F35]">The Unwritten Truth</h2>
+             <p class="max-w-3xl mx-auto text-lg md:text-xl leading-relaxed text-gray-700 mb-8">
+                Though her name was removed from parchment, Birtha believed her truth remained inscribed in a higher place. Her legacy is not one of vengeance, but a testament to enduring faith and the hope that the grace to mend is more powerful than the pride that seeks to break.
+            </p>
+            <div class="max-w-4xl mx-auto bg-white/50 p-8 rounded-xl shadow-lg border border-gray-200">
+                <p class="text-2xl italic text-gray-800 leading-loose">"Let it be known that even a servant who stumbles can remain devout, and that a single error does not erase a life lived in faith... My hope is that the love that seeks to mend, rather than to break, will ultimately prevail."</p>
+            </div>
+        </section>
+
+        <!-- Section 5: Our Stories -->
+        <section id="our-stories" class="mb-20 md:mb-32">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6 text-[#4A3F35]">Our Stories</h2>
+            <p class="max-w-3xl mx-auto text-lg md:text-xl leading-relaxed text-gray-700 text-center mb-12">
+                Inspired by Birtha's journey of resilience and grace, we invite you to share your own stories. Whether it's a moment of overcoming adversity, an act of profound forgiveness, or a testament to enduring faith, your experiences enrich our collective understanding.
+            </p>
+
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-200 mb-12">
+                <h3 class="font-bold text-2xl mb-4 text-[#A0522D]">Share Your Story</h3>
+                <form id="story-form" class="space-y-4">
+                    <div>
+                        <label for="story-name" class="block text-gray-700 text-lg mb-2">Your Name:</label>
+                        <input type="text" id="story-name" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#A0522D]" placeholder="Anonymous" required>
+                    </div>
+                    <div>
+                        <label for="story-text" class="block text-gray-700 text-lg mb-2">Your Story:</label>
+                        <textarea id="story-text" rows="6" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#A0522D]" placeholder="Share your experience here..." required></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-[#A0522D] text-white py-3 rounded-lg hover:bg-[#8B4513] transition-colors duration-300 font-bold text-lg">Submit Story</button>
+                </form>
+            </div>
+
+            <div id="stories-display" class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- Stories will be dynamically loaded here -->
+                <div class="story-card bg-stone-100">
+                    <p class="text-gray-900 italic leading-relaxed mb-3">"I once held a grudge for years, unable to let go of a past wrong. It wasn't until I truly understood the burden it placed on my own heart that I chose to forgive, not for them, but for my own peace. It was a liberation."</p>
+                    <p class="font-semibold text-gray-600">- A Reader</p>
+                </div>
+                 <div class="story-card bg-stone-100">
+                    <p class="text-gray-900 italic leading-relaxed mb-3">"Even in my darkest hour, when all felt lost, I found strength in small acts of kindness from unexpected places. It reminded me that hope persists, even when the narrative seems to turn against you."</p>
+                    <p class="font-semibold text-gray-600">- Sarah's Light</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="text-center py-8 mt-16 border-t border-gray-200">
+        <p class="text-gray-500">An interactive narrative experience. All content derived from "The Book of Birtha".</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const stories = [
+                 { name: "A Reader", text: "I once held a grudge for years, unable to let go of a past wrong. It wasn't until I truly understood the burden it placed on my own heart that I chose to forgive, not for them, but for my own peace. It was a liberation." },
+                 { name: "Sarah's Light", text: "Even in my darkest hour, when all felt lost, I found strength in small acts of kindness from unexpected places. It reminded me that hope persists, even when the narrative seems to turn against you." }
+            ];
+
+            const renderStories = () => {
+                const storiesDisplay = document.getElementById('stories-display');
+                storiesDisplay.innerHTML = ''; // Clear existing stories
+                stories.forEach(story => {
+                    const storyCard = document.createElement('div');
+                    storyCard.classList.add('story-card', 'bg-stone-100');
+                    storyCard.innerHTML = `
+                        <p class="text-gray-900 italic leading-relaxed mb-3">"${story.text}"</p>
+                        <p class="font-semibold text-gray-600">- ${story.name}</p>
+                    `;
+                    storiesDisplay.appendChild(storyCard);
+                });
+            };
+
+            const storyForm = document.getElementById('story-form');
+            storyForm.addEventListener('submit', (event) => {
+                event.preventDefault(); // Prevent default form submission
+
+                const nameInput = document.getElementById('story-name');
+                const textInput = document.getElementById('story-text');
+
+                const newStory = {
+                    name: nameInput.value.trim() || 'Anonymous',
+                    text: textInput.value.trim()
+                };
+
+                if (newStory.text) {
+                    stories.unshift(newStory); // Add new story to the beginning
+                    renderStories(); // Re-render all stories
+                    nameInput.value = ''; // Clear form fields
+                    textInput.value = '';
+                } else {
+                    erasureMsg.textContent = 'Please write your story before submitting.';
+                    erasureMsg.classList.remove('hidden');
+                    setTimeout(() => erasureMsg.classList.add('hidden'), 3000);
+                }
+            });
+
+            // Initial render of stories
+            renderStories();
+
+            // Character data
+            const characters = {
+                birtha: {
+                    title: 'Birtha: The Devout Handmaiden',
+                    text: 'I knew instantly the gravity of my error, the ripple it would send through the sacred fabric of our community... My heart ached not for myself, but for the dishonor I had inadvertently brought, for the sacred trust that had been momentarily forgotten.'
+                },
+                elara: {
+                    title: 'Elara: The Restless Heart',
+                    text: 'His wife, Elara, was a woman of vibrant spirit and restless heart, often burdened by the constraints placed upon her, and she sought solace in quiet conversations... It was in such moments, amidst the shadowed courtyards during the heat of summer, that our paths intertwined.'
+                },
+                jehiel: {
+                    title: 'Jehiel: The Prideful Scribe',
+                    text: 'When Jehiel discovered the truth, his face... became a mask of wounded pride and righteous fury. His voice... thundered with condemnation. To him, my very existence... threatened to unravel the carefully constructed image of his piety and authority.'
+                }
+            };
+
+            const characterCards = document.querySelectorAll('.character-card');
+            const infoBox = document.getElementById('character-info');
+
+            characterCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const charKey = card.dataset.char;
+                    
+                    characterCards.forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+
+                    const data = characters[charKey];
+                    infoBox.style.opacity = '0';
+                    setTimeout(() => {
+                        infoBox.innerHTML = `
+                            <div class="text-left">
+                                <h3 class="text-2xl font-bold mb-3 text-[#A0522D]">${data.title}</h3>
+                                <p class="text-lg leading-relaxed text-gray-800 italic">"${data.text}"</p>
+                            </div>
+                        `;
+                        infoBox.style.opacity = '1';
+                    }, 300);
+                });
+            });
+
+            // Erasure effect
+            const erasureButton = document.getElementById('erasure-button');
+            const fadingText = document.querySelector('.fading-text');
+            const erasureMsg = document.getElementById('erasure-message');
+
+            erasureButton.addEventListener('click', () => {
+                if (!fadingText.classList.contains('faded')) {
+                    fadingText.classList.add('faded');
+                    erasureButton.style.display = 'none';
+                    erasureMsg.textContent = '[ This passage was struck from the record by order of the scribe. ]';
+                    erasureMsg.classList.remove('hidden');
+                }
+            });
+
+            // Themes Chart
+            const ctx = document.getElementById('themes-chart').getContext('2d');
+            const themesChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pride & Vengeance', 'Grace & Forgiveness'],
+                    datasets: [{
+                        label: 'Thematic Weight',
+                        data: [90, 10],
+                        backgroundColor: [
+                            '#A0522D',
+                            '#D2B48C'
+                        ],
+                        borderColor: '#FDFBF8',
+                        borderWidth: 4,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#4A3F35',
+                                font: {
+                                    size: 14,
+                                    family: 'Tinos, serif'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            enabled: true
+                        }
+                    }
+                }
+            });
+
+            // Smooth scrolling and active nav link highlighting
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.5
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+            
+        });
+    </script>
+
+</body>
+</html>
